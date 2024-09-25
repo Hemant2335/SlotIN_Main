@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  ADMIN
+  USER
+  BUSINESS
+}
+
+enum Status {
+  ACTIVE
+  PAUSED
+}
+
+enum AppointmentStatus {
+  ACTIVE
+  MISSED
+  EXPIRED
+
+}
+
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  name         String?
+  password     String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  type         UserType       @default(USER)
+  space        SpaceItems[]
+  Appointments Appointments[]
+}
+
+model SpaceItems {
+  id                  String                @id @default(cuid())
+  Profession          String
+  ShopName            String
+  ImageUrl            String
+  State               String
+  City                String
+  Status              Status                @default(PAUSED)
+  Address             String
+  Timing              String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  userId              String
+  user                User                  @relation(fields: [userId], references: [id])
+  Appointments        Appointments[]
+  OfflineAppointments OfflineAppointments[]
+}
+
+model Appointments {
+  id        String     @id @default(cuid())
+  date       DateTime?  
+  fromtime   String
+  totime    String
+  status    AppointmentStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  spaceId   String
+  space     SpaceItems @relation(fields: [spaceId], references: [id])
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+}
+
+model OfflineAppointments {
+  id        String     @id @default(cuid())
+  date      DateTime
+  fromtime  String
+  totime    String
+  name      String
+  status    AppointmentStatus @default(ACTIVE)
+  phone     String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  spaceId   String
+  space     SpaceItems @relation(fields: [spaceId], references: [id])
+}
